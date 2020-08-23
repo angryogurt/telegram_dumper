@@ -8,58 +8,63 @@
     }
     include 'madeline.php';
 
-    $settings['app_info']['api_id'] = 1480353;
-    $settings['app_info']['api_hash'] = '71b9dd00160eaf508939711d09b0fbed';
+    ///TODO: Hide auth data to conf/env
+
+    /// 1. INPUT ACC API ID, HASH
+    $settings['app_info']['api_id'] = 0000000;
+    $settings['app_info']['api_hash'] = '';
 
     $MadelineProto = new \danog\MadelineProto\API('session.madeline', $settings);
 
-    $MadelineProto->start();
+    ///TODO: Improve auth (by web forms/transfer sessions)
 
+    /// 2. COMMENT THIS 2 LINES BEFORE FIRST START
+    /// 9. AFTER LOGIN UNCOMMENT AGAIN
+    $MadelineProto->start();
     $account["Authorization"] = $MadelineProto->account->getAuthorizations();
 
     $MadelineProto->async(true);
 
     $MadelineProto->loop(function () use ($MadelineProto) {
 
+        /// 3. UNCOMMENT THIS 2 LINES BEFORE FIRST START
+        /// 4. INPUT ACC PHONE
+        /// 5. GOTO localhost/show_news
+        /// 6. AFTER ERROR INPUT CODE FROM TELEGRAM
+        /// 7. GOTO localhost/show_news
+        /// 8. AFTER LOGIN COMMENT AGAIN
         /*
-        yield $MadelineProto->phoneLogin('+79875066080');
-        $authorization = yield $MadelineProto->completePhoneLogin('54218');
-        if ($authorization['_'] === 'account.password') {
-            $authorization = yield $MadelineProto->complete2falogin(yield $MadelineProto->readline('Please enter your password (hint '.$authorization['hint'].'): '));
-        }
+        yield $MadelineProto->phoneLogin('+79990000000');
+        $authorization = yield $MadelineProto->completePhoneLogin('00000');
         */
 
         foreach (yield $MadelineProto->getDialogs() as $peer)
         {
-            if (array_key_exists('_', $peer))
+            if (array_key_exists('_', $peer) and $peer['_'] == "peerChannel")
             {
-                if ($peer['_'] == "peerChannel")
+                if (array_key_exists('channel_id', $peer))
                 {
-                    if (array_key_exists('channel_id', $peer))
-                    {
-                        $msgs = yield $MadelineProto->messages->getHistory([
-                            'peer' => $peer,
-                            'offset_id' => 0,
-                            'offset_date' => 0,
-                            'add_offset' => 0,
-                            'limit' => 100,
-                            'max_id' => 0,
-                            'min_id' => 0,
-                            'hash' => 0
-                        ]);
+                    $messages = yield $MadelineProto->messages->getHistory([
+                        'peer' => $peer,
+                        'offset_id' => 0,
+                        'offset_date' => 0,
+                        'add_offset' => 0,
+                        'limit' => 100,
+                        'max_id' => 0,
+                        'min_id' => 0,
+                        'hash' => 0
+                    ]);
 
-                        foreach ($msgs["messages"] as $msg)
+                    foreach ($messages["messages"] as $message)
+                    {
+                        if (array_key_exists('message', $message))
                         {
-                            if (array_key_exists('message', $msg))
-                            {
-                                echo $peer['channel_id']."-".$msg['id']."-".$msg['message'];
-                                echo "<br>";
-                            };
-                        };
+                            echo $peer['channel_id']."-".$message['id']."-".$message['message']."<br>";
+                        }
                     }
                 }
-            };
-        };
+            }
+        }
     });
 ?>
 
